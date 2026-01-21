@@ -1,0 +1,13 @@
+The restaurant dashboard provides a comprehensive overview of sales performance, customer behavior, and order trends.
+
+Overall, the total quantity sold is 15K, indicating strong demand. Among food categories, Main Course items contribute the highest share, followed by snacks and desserts, while beverages and breakfast items account for a smaller portion of sales.
+
+In terms of delivery status, the majority of orders are successfully delivered, with cancellations forming only a minimal share. This reflects efficient order fulfillment and service reliability.
+
+Analysis by member type shows that Gold members generate significantly higher sales quantity than Regular members, highlighting the importance of loyalty programs. Gold members also prefer digital payment methods such as UPI and card, whereas Regular members show comparatively lower transaction volumes.
+
+From a restaurant type perspective, North Indian cuisine records the highest sales, followed by South Indian and Mughlai cuisines. This suggests a strong customer preference for North Indian food.
+
+Monthly sales distribution indicates March and April as peak sales months, while February records relatively lower sales, showing seasonal variation in demand.
+
+Overall, the dashboard indicates healthy sales performance, strong customer loyalty impact, efficient delivery operations, and clear food preferences, which can help management focus on high-performing categories and loyal customers for future growth.
