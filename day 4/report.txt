@@ -1,0 +1,9 @@
+Report of an Sports tech products
+
+charts are
+*clustered column chart(count of sales by quantity)
+*line chart(count of sales by product)
+*pie chart(count of unit price (INR) by payment type)
+*donut chart(count of payment type by product)
+*filled map
+*treemap
