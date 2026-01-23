@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Restaurant Dashboard (Single File)</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg1:#0b1020;
+      --bg2:#020617;
+      --panel: rgba(255,255,255,.07);
+      --panel2: rgba(255,255,255,.10);
+      --border: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 10% 10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(900px 600px at 90% 20%, rgba(6,182,212,.28), transparent 55%),
+        radial-gradient(900px 700px at 50% 90%, rgba(34,197,94,.20), transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+    }
+
+    .app{max-width:1200px; margin:0 auto; padding:18px;}
+    header{
+      display:flex; justify-content:space-between; align-items:center; gap:14px;
+      padding:14px 16px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .brand{display:flex; align-items:center; gap:12px;}
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      display:grid; place-items:center;
+      font-weight:800; color:white;
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(6,182,212,.95));
+      box-shadow: 0 12px 24px rgba(0,0,0,.25);
+    }
+    h1{font-size:16px; margin:0;}
+    .sub{font-size:12px; color:var(--muted); margin-top:2px;}
+    .btn{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn:hover{filter:brightness(1.08)}
+
+    .filters{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1.4fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    .box{
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:8px;}
+    input, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+    }
+    input:focus, select:focus{box-shadow: 0 0 0 3px rgba(6,182,212,.20);}
+
+    .kpis{display:grid; grid-template-columns: repeat(3,1fr); gap:12px;}
+    .kpi{border:1px solid var(--border); border-radius:18px; padding:14px; background: rgba(255,255,255,.06);}
+    .kLabel{font-size:12px; color:var(--muted);}
+    .kVal{font-size:20px; font-weight:800; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+    .card{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background: linear-gradient(180deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow);
+      padding:14px;
+      backdrop-filter: blur(12px);
+      min-height:320px;
+    }
+    .span-7{grid-column: span 7;}
+    .span-5{grid-column: span 5;}
+    .span-12{grid-column: span 12;}
+    .head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:10px;}
+    .head h3{margin:0; font-size:14px;}
+    .hint{font-size:12px; color:var(--muted);}
+
+    canvas{width:100% !important; height:260px !important;}
+
+    .tableWrap{
+      overflow:auto;
+      border-radius:16px;
+      border:1px solid var(--border);
+    }
+    table{width:100%; border-collapse:collapse; min-width:640px;}
+    th, td{padding:12px; text-align:left;}
+    th{
+      font-size:12px; color:var(--muted);
+      background: rgba(0,0,0,.18);
+      position: sticky; top:0; z-index:1;
+    }
+    tbody tr{cursor:pointer;}
+    tbody tr:hover{background: rgba(6,182,212,.10);}
+    tbody tr.active{background: rgba(124,58,237,.18);}
+
+    footer{
+      margin-top:14px;
+      display:flex; justify-content:space-between; align-items:center;
+      color:var(--muted); font-size:12px;
+      padding: 8px 2px;
+      gap:10px;
+    }
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.14);
+      color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      max-width: 70%;
+    }
+
+    @media (max-width: 980px){
+      .filters{grid-template-columns:1fr;}
+      .span-7,.span-5{grid-column: span 12;}
+      .pill{max-width: 100%;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">BI</div>
+        <div>
+          <h1>Restaurant Dashboard</h1>
+          <div class="sub">Click charts to filter • Search & dropdown • Single-file HTML</div>
+        </div>
+      </div>
+      <button class="btn" id="resetBtn">Reset</button>
+    </header>
+
+    <section class="filters">
+      <div class="box">
+        <label>Search Restaurant</label>
+        <input id="searchInput" placeholder="Type a restaurant name..." />
+      </div>
+
+      <div class="box">
+        <label>Restaurant Type</label>
+        <select id="typeSelect">
+          <option value="__all__">All Types</option>
+        </select>
+      </div>
+
+      <div class="box">
+        <div class="kpis">
+          <div class="kpi">
+            <div class="kLabel">Total Restaurants</div>
+            <div class="kVal" id="kpiTotal">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kLabel">Types</div>
+            <div class="kVal" id="kpiTypes">0</div>
+          </div>
+          <div class="kpi">
+            <div class="kLabel">Selection</div>
+            <div class="kVal" id="kpiSel">All</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="grid">
+      <section class="card span-7">
+        <div class="head">
+          <h3>Restaurants by Type</h3>
+          <div class="hint">Click a bar to filter</div>
+        </div>
+        <canvas id="barChart"></canvas>
+      </section>
+
+      <section class="card span-5">
+        <div class="head">
+          <h3>Type Share</h3>
+          <div class="hint">Click a slice to filter</div>
+        </div>
+        <canvas id="donutChart"></canvas>
+      </section>
+
+      <section class="card span-12">
+        <div class="head">
+          <h3>Details</h3>
+          <div class="hint">Click a row to focus</div>
+        </div>
+
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div>Tip: click the same selection again to clear.</div>
+      <div class="pill" id="pill">No selection</div>
+    </footer>
+  </div>
+
+  <script>
+    /***************
+     * 1) PASTE YOUR JSON DATA HERE
+     * Must be an array of objects like:
+     * [{ "Resturant_Code":212,"Resturant_Name":"Bukhara","Resturant_type":"North Indian"}, ...]
+     ***************/
+    const RAW = [
+      // 👇 Replace this sample with your full JSON data
+      {"Resturant_Code":212,"Resturant_Name":"Bukhara","Resturant_type":"North Indian"},
+      {"Resturant_Code":213,"Resturant_Name":"The Spice Route","Resturant_type":"Asian"},
+      {"Resturant_Code":214,"Resturant_Name":"Pizza Hub","Resturant_type":"Italian"},
+      {"Resturant_Code":215,"Resturant_Name":"Curry House","Resturant_type":"North Indian"},
+      {"Resturant_Code":216,"Resturant_Name":"Sushi Zen","Resturant_type":"Asian"},
+      {"Resturant_Code":217,"Resturant_Name":"Pasta Point","Resturant_type":"Italian"}
+    ];
+
+    // --- State (Power BI-ish filtering) ---
+    let state = {
+      search: "",
+      dropdownType: "__all__",
+      chartType: null,       // clicked type on bar/donut
+      focusedCode: null      // clicked row code
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function normType(s){
+      return String(s ?? "").trim().replace(/\s+/g, " ");
+    }
+
+    // normalize types once
+    const DATA = RAW.map(r => ({
+      ...r,
+      Resturant_type: normType(r.Resturant_type)
+    }));
+
+    function uniqueTypes(){
+      return [...new Set(DATA.map(d => d.Resturant_type))].sort((a,b)=>a.localeCompare(b));
+    }
+
+    function fillDropdown(){
+      const sel = $("typeSelect");
+      sel.innerHTML = `<option value="__all__">All Types</option>` +
+        uniqueTypes().map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    }
+
+    function applyFilters(){
+      let rows = [...DATA];
+
+      if(state.dropdownType !== "__all__"){
+        rows = rows.filter(r => r.Resturant_type === state.dropdownType);
+      }
+      if(state.chartType){
+        rows = rows.filter(r => r.Resturant_type === state.chartType);
+      }
+      if(state.search.trim()){
+        const q = state.search.trim().toLowerCase();
+        rows = rows.filter(r =>
+          String(r.Resturant_Name ?? "").toLowerCase().includes(q) ||
+          String(r.Resturant_Code ?? "").toLowerCase().includes(q) ||
+          String(r.Resturant_type ?? "").toLowerCase().includes(q)
+        );
+      }
+      if(state.focusedCode != null){
+        rows = rows.filter(r => Number(r.Resturant_Code) === Number(state.focusedCode));
+      }
+      return rows;
+    }
+
+    function aggregateByType(rows){
+      const m = new Map();
+      for(const r of rows){
+        m.set(r.Resturant_type, (m.get(r.Resturant_type) ?? 0) + 1);
+      }
+      return [...m.entries()].map(([type,count]) => ({type,count}))
+        .sort((a,b)=>b.count-a.count);
+    }
+
+    function updateKPIs(rows){
+      $("kpiTotal").textContent = rows.length;
+      $("kpiTypes").textContent = new Set(rows.map(r => r.Resturant_type)).size;
+
+      const parts = [];
+      if(state.chartType) parts.push(`Type: ${state.chartType}`);
+      if(state.dropdownType !== "__all__") parts.push(`Dropdown: ${state.dropdownType}`);
+      if(state.focusedCode != null) parts.push(`Code: ${state.focusedCode}`);
+      if(state.search.trim()) parts.push(`Search: "${state.search.trim()}"`);
+
+      const txt = parts.length ? parts.join(" • ") : "All";
+      $("kpiSel").textContent = txt;
+      $("pill").textContent = parts.length ? txt : "No selection";
+    }
+
+    function renderTable(rows){
+      const tb = $("tableBody");
+      tb.innerHTML = "";
+      for(const r of rows){
+        const tr = document.createElement("tr");
+        if(state.focusedCode != null && Number(r.Resturant_Code) === Number(state.focusedCode)){
+          tr.classList.add("active");
+        }
+        tr.innerHTML = `
+          <td>${escapeHtml(r.Resturant_Code)}</td>
+          <td>${escapeHtml(r.Resturant_Name)}</td>
+          <td>${escapeHtml(r.Resturant_type)}</td>
+        `;
+        tr.addEventListener("click", () => {
+          // toggle focus
+          const code = Number(r.Resturant_Code);
+          state.chartType = null; // mimic BI focus on row
+          state.focusedCode = (state.focusedCode === code) ? null : code;
+          render();
+        });
+        tb.appendChild(tr);
+      }
+    }
+
+    // --- Charts ---
+    let barChart, donutChart;
+
+    function palette(i){
+      const colors = [
+        "rgba(124,58,237,.92)", // purple
+        "rgba(6,182,212,.90)",  // cyan
+        "rgba(34,197,94,.88)",  // green
+        "rgba(245,158,11,.88)", // amber
+        "rgba(236,72,153,.86)", // pink
+        "rgba(59,130,246,.86)"  // blue
+      ];
+      return colors[i % colors.length];
+    }
+
+    function buildCharts(){
+      const barCtx = $("barChart").getContext("2d");
+      const donutCtx = $("donutChart").getContext("2d");
+
+      barChart = new Chart(barCtx, {
+        type: "bar",
+        data: { labels: [], datasets: [{ data: [], borderRadius: 10 }] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "rgba(255,255,255,.70)" }, grid: { color:"rgba(255,255,255,.07)" } },
+            y: { ticks: { color: "rgba(255,255,255,.70)" }, grid: { color:"rgba(255,255,255,.07)" } }
+          },
+          onClick: (_, els) => {
+            if(!els.length) return;
+            const idx = els[0].index;
+            const type = barChart.data.labels[idx];
+            state.focusedCode = null;
+            state.chartType = (state.chartType === type) ? null : type;
+            render();
+          }
+        }
+      });
+
+      donutChart = new Chart(donutCtx, {
+        type: "doughnut",
+        data: { labels: [], datasets: [{ data: [], borderWidth: 0, hoverOffset: 8 }] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "64%",
+          plugins: {
+            legend: {
+              position: "right",
+              labels: { color: "rgba(255,255,255,.85)" }
+            }
+          },
+          onClick: (_, els) => {
+            if(!els.length) return;
+            const idx = els[0].index;
+            const type = donutChart.data.labels[idx];
+            state.focusedCode = null;
+            state.chartType = (state.chartType === type) ? null : type;
+            render();
+          }
+        }
+      });
+    }
+
+    function updateCharts(rows){
+      const agg = aggregateByType(rows);
+      const labels = agg.map(x => x.type);
+      const values = agg.map(x => x.count);
+
+      // bar
+      barChart.data.labels = labels;
+      barChart.data.datasets[0].data = values;
+
+      // donut
+      donutChart.data.labels = labels;
+      donutChart.data.datasets[0].data = values;
+
+      // highlight selection (Power BI feel)
+      if(state.chartType){
+        const dim = "rgba(255,255,255,.12)";
+        barChart.data.datasets[0].backgroundColor = labels.map(t => t === state.chartType ? "rgba(124,58,237,.92)" : dim);
+        donutChart.data.datasets[0].backgroundColor = labels.map(t => t === state.chartType ? "rgba(6,182,212,.92)" : dim);
+      } else {
+        barChart.data.datasets[0].backgroundColor = labels.map((_,i)=>palette(i));
+        donutChart.data.datasets[0].backgroundColor = labels.map((_,i)=>palette(i));
+      }
+
+      barChart.update();
+      donutChart.update();
+    }
+
+    function render(){
+      const rows = applyFilters();
+      updateKPIs(rows);
+      updateCharts(rows);
+      renderTable(rows);
+    }
+
+    // --- Events ---
+    $("searchInput").addEventListener("input", (e) => {
+      state.search = e.target.value;
+      state.focusedCode = null;
+      render();
+    });
+
+    $("typeSelect").addEventListener("change", (e) => {
+      state.dropdownType = e.target.value;
+      state.focusedCode = null;
+      render();
+    });
+
+    $("resetBtn").addEventListener("click", () => {
+      state = { search:"", dropdownType:"__all__", chartType:null, focusedCode:null };
+      $("searchInput").value = "";
+      $("typeSelect").value = "__all__";
+      render();
+    });
+
+    // --- Init ---
+    fillDropdown();
+    buildCharts();
+    render();
+  </script>
+</body>
+</html>
